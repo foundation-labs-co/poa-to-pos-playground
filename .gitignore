@@ -1,0 +1,4 @@
+consensus/*
+validator*/datadir/geth
+validator*/datadir/geth.ipc
+docker-compose.yml-e

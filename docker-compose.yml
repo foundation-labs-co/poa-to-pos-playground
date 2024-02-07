@@ -1,0 +1,136 @@
+version: "3.8"
+services:
+  validator1:
+    container_name: validator1
+    image: ethereum/client-go:latest
+    restart: always
+    working_dir: /poa
+    hostname: validator
+    volumes:
+      - $PWD/validator1:/poa
+      - ./config:/config
+    ports:
+      - 30456:30456
+      - 8551:8551
+      - 8545:8545
+      - 8546:8546
+    command: |
+      --networkid 1112
+      --syncmode "full"
+      --mine
+      --miner.gasprice 1000000000
+      --miner.gaslimit 20000000
+      --miner.etherbase 0x2D133C16eBdB1Dc5a5fD824C926D9D018Ed70EAE
+      --unlock 0x2D133C16eBdB1Dc5a5fD824C926D9D018Ed70EAE
+      --datadir "datadir"
+      --password .password.txt
+      --port 30456
+      --bootnodes "enode://32a3a87f8a56d5066b46fde9c4ef6dd18057b043e8f27557f4bb8168af05b31cbbc1b31c7c62a8df8106a002da7b087854619d7d13801440bbd3371c55c900b3@validator1:30456"
+      --authrpc.vhosts *
+      --authrpc.addr 0.0.0.0
+      --authrpc.jwtsecret=/config/jwtsecret
+      --http
+      --http.api=eth,net,web3,txpool,debug
+      --http.addr=0.0.0.0
+      --http.corsdomain=*
+      --http.vhosts=*
+      --ws
+      --ws.api=eth,net,web3,txpool,debug
+      --ws.addr=0.0.0.0
+      --ws.origins=*
+      --allow-insecure-unlock
+
+  validator2:
+    container_name: validator2
+    image: ethereum/client-go:latest
+    restart: always
+    working_dir: /poa
+    hostname: validator2
+    volumes:
+      - $PWD/validator2:/poa
+      - ./config:/config
+    ports:
+      - 30457:30456
+    command: |
+      --networkid 1112
+      --syncmode "full"
+      --mine
+      --miner.gasprice 1000000000
+      --miner.gaslimit 20000000
+      --miner.etherbase 0x2fe37d3Ded9F598EFb5Ea326fd8B49e47e2069b2
+      --unlock 0x2fe37d3Ded9F598EFb5Ea326fd8B49e47e2069b2
+      --datadir "datadir"
+      --password .password.txt
+      --port 30456
+      --bootnodes "enode://32a3a87f8a56d5066b46fde9c4ef6dd18057b043e8f27557f4bb8168af05b31cbbc1b31c7c62a8df8106a002da7b087854619d7d13801440bbd3371c55c900b3@validator1:30456"
+      --authrpc.vhosts *
+      --authrpc.addr 0.0.0.0
+      --authrpc.jwtsecret=/config/jwtsecret
+
+  validator3:
+    container_name: validator3
+    image: ethereum/client-go:latest
+    restart: always
+    working_dir: /poa
+    hostname: validator3
+    volumes:
+      - $PWD/validator3:/poa
+      - ./config:/config
+    ports:
+      - 30458:30456
+    command: |
+      --networkid 1112
+      --syncmode "full"
+      --mine
+      --miner.gasprice 1000000000
+      --miner.gaslimit 20000000
+      --miner.etherbase 0x0896AA241bBf4e536b645cA722DA782a86Ce54a9
+      --unlock 0x0896AA241bBf4e536b645cA722DA782a86Ce54a9
+      --datadir "datadir"
+      --password .password.txt
+      --port 30456
+      --bootnodes "enode://32a3a87f8a56d5066b46fde9c4ef6dd18057b043e8f27557f4bb8168af05b31cbbc1b31c7c62a8df8106a002da7b087854619d7d13801440bbd3371c55c900b3@validator1:30456"
+      --authrpc.vhosts *
+      --authrpc.addr 0.0.0.0
+      --authrpc.jwtsecret=/config/jwtsecret
+
+  lighthouse-beacon:
+    image: sigp/lighthouse
+    volumes:
+      - ./consensus/lighthouse-beacon:/root/.lighthouse
+      - ./config:/config
+    ports:
+      - 5062:5062
+    command:
+      - lighthouse
+      - bn
+      - --eth1
+      - --execution-endpoint=http://validator1:8551
+      - --execution-jwt=/config/jwtsecret
+      - --graffiti=lighthouse-beacon
+      - --debug-level=info
+      - --http
+      - --http-address=0.0.0.0
+      - --http-port=5062
+      - --http-allow-origin=*
+
+  lighthouse-validator:
+    image: sigp/lighthouse
+    volumes:
+      - ../consensus/validatordata-lighthouse:/root/.lighthouse
+      - ../config:/config
+    ports:
+      - 5063:5062
+    command:
+      - lighthouse
+      - vc
+      - --beacon-nodes=http://lighthouse-beacon:5062
+      - --init-slashing-protection
+      - --graffiti=lighthouse-vc
+      - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --debug-level=info
+      - --http
+      - --http-address=0.0.0.0
+      - --http-port=5062
+      - --http-allow-origin=*
+      - --unencrypted-http-transport
