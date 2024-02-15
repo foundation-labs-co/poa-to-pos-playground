@@ -2,3 +2,8 @@ consensus/*
 validator*/datadir/geth
 validator*/datadir/geth.ipc
 docker-compose.yml-e
+deploy-contracts/node_modules
+deploy-contracts/artifacts
+deploy-contracts/cache
+deploy-contracts/yarn-error.log
+deploy-contracts/yarn.lock

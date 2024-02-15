@@ -1,0 +1,6 @@
+1. Add CHAIN_SPEC_PATH=/app/config/genesis.json on blockscout/blockscout-env/common-blockscout.env
+2. Verify contract http://localhost:8100/address/0x4242424242424242424242424242424242424242/contracts
+    Contract name: DepositContract
+    Optimization enabled: false
+    Compiler version: v0.6.11+commit.5ef660b1
+    EVM Version: default
