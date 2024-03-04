@@ -11,11 +11,11 @@
     "petersburgBlock": 0,
     "istanbulBlock": 0,
     "berlinBlock": 0,
-    "londonBlock": 0,
     "muirGlacierBlock": 0,
-    "shanghaiTime": 1707253200,
-    "cancunTime": 1947103700,
-    "terminalTotalDifficulty": 300,
+    "londonBlock": 30,
+    "shanghaiTime": 1708675696,
+    "cancunTime": 1709006462,
+    "terminalTotalDifficulty": 140,
     "terminalTotalDifficultyPassed": true,
     "clique": {
       "period": 4,
@@ -23,7 +23,7 @@
     }
   },
   "nonce": "0x0",
-  "timestamp": "0x65C29E18",
+  "timestamp": "0x64898D1E",
   "extradata": "0x00000000000000000000000000000000000000000000000000000000000000002D133C16eBdB1Dc5a5fD824C926D9D018Ed70EAE0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
   "gasLimit": "0x2625a00",
   "difficulty": "0x1",
@@ -34,6 +34,9 @@
   "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "alloc": {
     "56483425992B77e7436386C766A299d707E4ddD5": {
+      "balance": "1000000000000000000000000000000"
+    },
+    "deeFFA0B633F2feF5252088b21D5fae24A6E378c": {
       "balance": "1000000000000000000000000000000"
     }
   }

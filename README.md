@@ -19,3 +19,10 @@ sh clean.sh
 - `genesis.json` default genesis for POA nodes before migrate
 - `genesis-merge.json` updated genesis for migrate
 - `config/` config for POS
+
+## Reference Secret
+
+```
+Wallet: 
+
+```

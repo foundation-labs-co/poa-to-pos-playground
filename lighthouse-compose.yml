@@ -1,0 +1,66 @@
+version: "3.8"
+services:
+  lighthouse-beacon:
+    image: sigp/lighthouse
+    volumes:
+      - ./consensus/lighthouse-beacon:/root/.lighthouse
+      - ./genesis-generate-output/custom_config_data:/config
+    ports:
+      - 9101:9100
+      - 5002:5002
+    command:
+      - lighthouse
+      - beacon
+      - --execution-endpoint=http://validator1:8551
+      - --execution-jwt=/config/jwtsecret
+      - --disable-peer-scoring
+      - --disable-packet-filter
+      - --http-allow-sync-stalled
+      - --http
+      - --http-address=0.0.0.0
+      - --http-port=5002
+      - --http-allow-origin=*
+      - --gui
+      - --eth1
+      - --target-peers=1
+      - --enr-address=0.0.0.0
+      - --enr-udp-port=9100
+      - --enr-tcp-port=9100
+      - --port=9100
+      - --testnet-dir=/config
+    networks:
+      - poa-migrate-network
+
+  lighthouse-validator:
+    image: sigp/lighthouse
+    volumes:
+      - ./consensus/validatordata-lighthouse:/root/.lighthouse
+      - ./genesis-generate-output/custom_config_data:/config
+    ports:
+      - 5063:5062
+    command:
+      - lighthouse
+      - vc
+      # - --beacon-nodes=http://beacon-chain:3500
+      - --beacon-nodes=http://lighthouse-beacon:5002
+      - --testnet-dir=/config
+      - --init-slashing-protection
+      - --graffiti=lighthouse-vc
+      - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --debug-level=info
+      - --http
+      - --http-address=0.0.0.0
+      - --http-port=5062
+      - --http-allow-origin=*
+      - --unencrypted-http-transport
+    networks:
+      - poa-migrate-network
+    depends_on:
+      # beacon-chain:
+      lighthouse-beacon:
+        condition: service_started
+
+networks:
+  poa-migrate-network:
+    external: true
+    name: poa_migrate_network

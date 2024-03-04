@@ -2,7 +2,7 @@ version: "3.8"
 services:
   validator1:
     container_name: validator1
-    image: ethereum/client-go:latest
+    image: ethereum/client-go:${VALIDATOR_DOCKER_TAG:-latest}
     restart: always
     working_dir: /poa
     hostname: validator
@@ -25,12 +25,12 @@ services:
       --datadir "datadir"
       --password .password.txt
       --port 30456
-      --bootnodes "enode://32a3a87f8a56d5066b46fde9c4ef6dd18057b043e8f27557f4bb8168af05b31cbbc1b31c7c62a8df8106a002da7b087854619d7d13801440bbd3371c55c900b3@validator1:30456"
+      --bootnodes ""
       --authrpc.vhosts *
       --authrpc.addr 0.0.0.0
       --authrpc.jwtsecret=/config/jwtsecret
       --http
-      --http.api=eth,net,web3,txpool,debug
+      --http.api=eth,net,web3,txpool,debug,admin
       --http.addr=0.0.0.0
       --http.corsdomain=*
       --http.vhosts=*
@@ -39,60 +39,80 @@ services:
       --ws.addr=0.0.0.0
       --ws.origins=*
       --allow-insecure-unlock
+    networks:
+      - poa-migrate-network
 
-  validator2:
-    container_name: validator2
-    image: ethereum/client-go:latest
-    restart: always
-    working_dir: /poa
-    hostname: validator2
-    volumes:
-      - $PWD/validator2:/poa
-      - ./config:/config
-    ports:
-      - 30457:30456
-    command: |
-      --networkid 1112
-      --syncmode "full"
-      --mine
-      --miner.gasprice 1000000000
-      --miner.gaslimit 20000000
-      --miner.etherbase 0x2fe37d3Ded9F598EFb5Ea326fd8B49e47e2069b2
-      --unlock 0x2fe37d3Ded9F598EFb5Ea326fd8B49e47e2069b2
-      --datadir "datadir"
-      --password .password.txt
-      --port 30456
-      --bootnodes "enode://32a3a87f8a56d5066b46fde9c4ef6dd18057b043e8f27557f4bb8168af05b31cbbc1b31c7c62a8df8106a002da7b087854619d7d13801440bbd3371c55c900b3@validator1:30456"
-      --authrpc.vhosts *
-      --authrpc.addr 0.0.0.0
-      --authrpc.jwtsecret=/config/jwtsecret
+  # validator2:
+  #   container_name: validator2
+  #   image: ethereum/client-go:${VALIDATOR_DOCKER_TAG:-latest}
+  #   restart: always
+  #   working_dir: /poa
+  #   hostname: validator2
+  #   volumes:
+  #     - $PWD/validator2:/poa
+  #     - ./config:/config
+  #   ports:
+  #     - 30457:30456
+  #   command: |
+  #     --networkid 1112
+  #     --syncmode "full"
+  #     --mine
+  #     --miner.gasprice 1000000000
+  #     --miner.gaslimit 20000000
+  #     --miner.etherbase 0x2fe37d3Ded9F598EFb5Ea326fd8B49e47e2069b2
+  #     --unlock 0x2fe37d3Ded9F598EFb5Ea326fd8B49e47e2069b2
+  #     --datadir "datadir"
+  #     --password .password.txt
+  #     --port 30456
+  #     --bootnodes ""
+  #     --authrpc.vhosts *
+  #     --authrpc.addr 0.0.0.0
+  #     --authrpc.jwtsecret=/config/jwtsecret
 
-  validator3:
-    container_name: validator3
-    image: ethereum/client-go:latest
-    restart: always
-    working_dir: /poa
-    hostname: validator3
-    volumes:
-      - $PWD/validator3:/poa
-      - ./config:/config
-    ports:
-      - 30458:30456
-    command: |
-      --networkid 1112
-      --syncmode "full"
-      --mine
-      --miner.gasprice 1000000000
-      --miner.gaslimit 20000000
-      --miner.etherbase 0x0896AA241bBf4e536b645cA722DA782a86Ce54a9
-      --unlock 0x0896AA241bBf4e536b645cA722DA782a86Ce54a9
-      --datadir "datadir"
-      --password .password.txt
-      --port 30456
-      --bootnodes "enode://32a3a87f8a56d5066b46fde9c4ef6dd18057b043e8f27557f4bb8168af05b31cbbc1b31c7c62a8df8106a002da7b087854619d7d13801440bbd3371c55c900b3@validator1:30456"
-      --authrpc.vhosts *
-      --authrpc.addr 0.0.0.0
-      --authrpc.jwtsecret=/config/jwtsecret
+  # validator3:
+  #   container_name: validator3
+  #   image: ethereum/client-go:${VALIDATOR_DOCKER_TAG:-latest}
+  #   restart: always
+  #   working_dir: /poa
+  #   hostname: validator3
+  #   volumes:
+  #     - $PWD/validator3:/poa
+  #     - ./config:/config
+  #   ports:
+  #     - 30458:30456
+  #   command: |
+  #     --networkid 1112
+  #     --syncmode "full"
+  #     --mine
+  #     --miner.gasprice 1000000000
+  #     --miner.gaslimit 20000000
+  #     --miner.etherbase 0x0896AA241bBf4e536b645cA722DA782a86Ce54a9
+  #     --unlock 0x0896AA241bBf4e536b645cA722DA782a86Ce54a9
+  #     --datadir "datadir"
+  #     --password .password.txt
+  #     --port 30456
+  #     --bootnodes ""
+  #     --authrpc.vhosts *
+  #     --authrpc.addr 0.0.0.0
+  #     --authrpc.jwtsecret=/config/jwtsecret
+
+  # create-beacon-chain-genesis:
+  #   image: "gcr.io/prysmaticlabs/prysm/cmd/prysmctl:latest"
+  #   command:
+  #     - testnet
+  #     - generate-genesis
+  #     - --num-validators=32
+  #     - --genesis-time-delay=0
+  #     - --genesis-time=1686736158
+  #     - --output-ssz=/config/genesis.ssz
+  #     - --chain-config-file=/config/config.yaml
+  #     - --geth-genesis-json-in=/config/genesis.json
+  #     - --geth-genesis-json-out=/config/genesis.json
+  #     - --execution-endpoint=http://validator1:8545
+  #   volumes:
+  #     - ./config:/config
+  #   networks:
+  #     - poa-migrate-network
 
   lighthouse-beacon:
     image: sigp/lighthouse
@@ -100,31 +120,47 @@ services:
       - ./consensus/lighthouse-beacon:/root/.lighthouse
       - ./config:/config
     ports:
-      - 5062:5062
+      - 9101:9100
+      - 5002:5002
     command:
       - lighthouse
-      - bn
-      - --eth1
+      - beacon
       - --execution-endpoint=http://validator1:8551
       - --execution-jwt=/config/jwtsecret
-      - --graffiti=lighthouse-beacon
-      - --debug-level=info
+      - --disable-peer-scoring
+      - --disable-packet-filter
+      - --http-allow-sync-stalled
       - --http
       - --http-address=0.0.0.0
-      - --http-port=5062
+      - --http-port=5002
       - --http-allow-origin=*
+      - --gui
+      - --eth1
+      - --target-peers=1
+      - --enr-address=0.0.0.0
+      - --enr-udp-port=9100
+      - --enr-tcp-port=9100
+      - --port=9100
+      - --testnet-dir=/config
+    networks:
+      - poa-migrate-network
+    # depends_on:
+      # create-beacon-chain-genesis:
+      #   condition: service_completed_successfully
 
   lighthouse-validator:
     image: sigp/lighthouse
     volumes:
-      - ../consensus/validatordata-lighthouse:/root/.lighthouse
-      - ../config:/config
+      - ./consensus/validatordata-lighthouse:/root/.lighthouse
+      - ./config:/config
     ports:
       - 5063:5062
     command:
       - lighthouse
       - vc
-      - --beacon-nodes=http://lighthouse-beacon:5062
+      # - --beacon-nodes=http://beacon-chain:3500
+      - --beacon-nodes=http://lighthouse-beacon:5002
+      - --testnet-dir=/config
       - --init-slashing-protection
       - --graffiti=lighthouse-vc
       - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
@@ -134,3 +170,49 @@ services:
       - --http-port=5062
       - --http-allow-origin=*
       - --unencrypted-http-transport
+    networks:
+      - poa-migrate-network
+    depends_on:
+      # beacon-chain:
+      lighthouse-beacon:
+        condition: service_started
+
+  # beacon-chain:
+  #   image: "gcr.io/prysmaticlabs/prysm/beacon-chain:stable"
+  #   command:
+  #     - --datadir=/consensus/beacondata
+  #     # No peers to sync with in this testnet, so setting to 0
+  #     - --min-sync-peers=0
+  #     - --genesis-state=/config/genesis.ssz
+  #     - --bootstrap-node=
+  #     - --interop-eth1data-votes
+  #     # The chain configuration file used for setting up Prysm
+  #     - --chain-config-file=/config/config.yaml
+  #     # We specify the chain id used by our execution client
+  #     - --contract-deployment-block=0
+  #     - --chain-id=1112
+  #     - --rpc-host=0.0.0.0
+  #     - --grpc-gateway-host=0.0.0.0
+  #     - --execution-endpoint=http://validator1:8551
+  #     - --accept-terms-of-use
+  #     - --jwt-secret=/config/jwtsecret
+  #     - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
+  #     - --minimum-peers-per-subnet=0
+  #     - --enable-debug-rpc-endpoints
+  #     - --force-clear-db
+  #   ports:
+  #     - 4000:4000
+  #     - 3500:3500
+  #     - 8080:8080
+  #     - 6060:6060
+  #     - 9090:9090
+  #   volumes:
+  #     - ./consensus:/consensus
+  #     - ./config:/config
+  #   depends_on:
+  #     create-beacon-chain-genesis:
+  #       condition: service_completed_successfully
+
+networks:
+  poa-migrate-network:
+    name: poa_migrate_network

@@ -1,9 +1,23 @@
 consensus/*
 validator*/datadir/geth
 validator*/datadir/geth.ipc
-docker-compose.yml-e
-deploy-contracts/node_modules
-deploy-contracts/artifacts
-deploy-contracts/cache
-deploy-contracts/yarn-error.log
-deploy-contracts/yarn.lock
+
+# Deploy deposit
+scripts/node_modules
+scripts/artifacts
+scripts/cache
+scripts/yarn-error.log
+
+# sed Edit
+**/*-e
+
+# mutate config
+config/*
+!config/genesis.json
+!config/jwtsecret
+
+# test command
+test.sh
+
+# output
+genesis-generate-output
