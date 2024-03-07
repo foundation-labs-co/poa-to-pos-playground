@@ -136,12 +136,13 @@ services:
       - --http-allow-origin=*
       - --gui
       - --eth1
-      - --target-peers=1
+      - --target-peers=2
       - --enr-address=0.0.0.0
       - --enr-udp-port=9100
       - --enr-tcp-port=9100
       - --port=9100
       - --testnet-dir=/config
+      - --debug-level=debug
     networks:
       - poa-migrate-network
     # depends_on:

@@ -36,5 +36,5 @@ VALIDATOR_DOCKER_TAG=$VALIDATOR_VERSION docker compose up -d validator1
 # DST="--bootnodes \"$ENODE1,$ENODE2,$ENODE3\""
 # sed -i -e "s|$SRC|$DST|g" docker-compose.yml
 
-docker compose up -d validator1
+# docker compose up -d validator1
 # && docker compose up -d validator2 && docker compose up -d validator3

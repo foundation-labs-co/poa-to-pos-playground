@@ -17,12 +17,17 @@ else
     echo $DEPOSIT_ADDRESS >config/deposit_contract.txt
 fi
 
+LATEST_BLOCK=$(docker compose logs validator1 --tail=1 | grep -o 'number=[^ ]*' | cut -d '=' -f 2)
+LONDON_BLOCK=$(($LATEST_BLOCK + 10))
+
 docker compose stop validator1
 # && docker compose stop validator2 && docker compose stop validator3
 
-EL_BLOCK_TIME=4 # clique block time
-EL_TTD=50       # clique block target = TTD/2
-EL_DELAY=60     # delay for startup CL
+EL_BLOCK_TIME=4                      # clique block time
+EL_TTD=$((($LATEST_BLOCK + 25) * 2)) # clique block target = TTD/2
+EL_DELAY=60
+
+# delay for startup CL
 
 CL_SLOT_PER_EPOCH=32
 CL_SLOT_TIME=4
@@ -38,20 +43,14 @@ DENEB_FORK_EPOCH_TIME=$(($DENEB_FORK_SLOT * $CL_SLOT_TIME))
 CANCUN_DELAY=$(($SHANGHAI_DELAY + $DENEB_FORK_EPOCH_TIME))
 CANCUN=$(($GENESIS + $CANCUN_DELAY))
 
-LONDON_BLOCK=10
 sed -i -e "s|\"shanghaiTime\": .*,|\"shanghaiTime\": $SHANGHAI,|g" ./config/genesis.json
 sed -i -e "s|\"cancunTime\": .*,|\"cancunTime\": $CANCUN,|g" ./config/genesis.json
 sed -i -e "s|\"londonBlock\": .*,|\"londonBlock\": $LONDON_BLOCK,|g" ./config/genesis.json
 sed -i -e "s|\"terminalTotalDifficulty\": .*,|\"terminalTotalDifficulty\": $EL_TTD,|g" ./config/genesis.json
-echo "The merge will begin at $(date -j -v ${EL_DELAY}s)"
-
-# GENESIS_HEX=$(cat genesis.json | grep -o '"timestamp": ".*"' | cut -d'"' -f 4)
-# GENESIS=$((16${GENESIS_HEX/0x/#}))
-# sed -i -e "s|MIN_GENESIS_TIME: .*|MIN_GENESIS_TIME: $MERGE_TIME|g" ./config/config.yaml
-# sed -i -e "s|DEPOSIT_CONTRACT_ADDRESS: .*|DEPOSIT_CONTRACT_ADDRESS: $DEPOSIT_ADDRESS|g" ./config/config.yaml
+echo "The merge will begin at $(date -j -v +${EL_DELAY}S)"
 
 # Write config genesis generetor
-sed -i -e "s|GENESIS_TIMESTAMP=.*|GENESIS_TIMESTAMP=$MERGE_TIME|g" ./genesis-generator-config/values.env
+sed -i -e "s|GENESIS_TIMESTAMP=.*|GENESIS_TIMESTAMP=$SHANGHAI|g" ./genesis-generator-config/values.env
 sed -i -e "s|DEPOSIT_CONTRACT_ADDRESS=".*"|DEPOSIT_CONTRACT_ADDRESS="$DEPOSIT_ADDRESS"|g" ./genesis-generator-config/values.env
 sed -i -e "s|CL_EXEC_BLOCK=".*"|CL_EXEC_BLOCK="$DEPOSIT_DEPLOY_BLOCK_NUMBER"|g" ./genesis-generator-config/values.env
 sed -i -e "s/SLOTS_PER_EPOCH=\".*\"/SLOTS_PER_EPOCH=\"$CL_SLOT_PER_EPOCH\"/" ./genesis-generator-config/values.env
@@ -67,12 +66,12 @@ docker compose up -d validator1
 
 echo "wait for validator startup ..." && sleep 10
 
-until [ "$(docker compose logs validator1 --tail=1 | grep -o 'number=[^ ]*' | cut -d '=' -f 2)" -ge $(($TTD / 2)) ]; do
-    echo "Current block is $(docker compose logs validator1 --tail=1 | grep -o 'number=[^ ]*' | cut -d '=' -f 2) wait to $(($TTD / 2))..."
+until [ "$(docker compose logs validator1 --tail=1 | grep -o 'number=[^ ]*' | cut -d '=' -f 2)" -ge $(($EL_TTD / 2)) ]; do
+    echo "Current block is $(docker compose logs validator1 --tail=1 | grep -o 'number=[^ ]*' | cut -d '=' -f 2) wait to $(($EL_TTD / 2))..."
     sleep 3
 done
 
-echo "Current block Exceeded at $(($TTD / 2))" && sleep 10
+echo "Current block Exceeded at $(($EL_TTD / 2))" && sleep 10
 
 curl -X POST -H "Content-Type: application/json" --data '{ "jsonrpc":"2.0","method":"eth_getBlockByNumber", "params":[ "latest", true ], "id":1 }' http://0.0.0.0:8545/ >genesis-generator-config/el/latest_block.json
 
@@ -81,7 +80,7 @@ docker run --rm -it -u $UID -v $PWD/genesis-generate-output:/data \
     0xth0r/eth2-testnet-genesis:latest all
 
 find ./genesis-generate-output/custom_config_data ! -name 'genesis.json' ! -name 'tranche_0000.txt' -type f -exec cp -fr {} ./config \; && \ 
-cp -rf genesis-generate-output/custom_config_data/tranches config
+cp -fr genesis-generate-output/custom_config_data/tranches config
 
 docker run -it --rm \
     -v $PWD/consensus/validatordata-lighthouse:/root/lighthouse \

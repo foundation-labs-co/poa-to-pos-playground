@@ -1,6 +1,7 @@
 consensus/*
 validator*/datadir/geth
 validator*/datadir/geth.ipc
+geth-second/*
 
 # Deploy deposit
 scripts/node_modules
